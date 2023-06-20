@@ -1,0 +1,43 @@
+version: '3.8'
+
+networks:
+  sgt-network:
+
+services:
+
+  sgt_api:
+    environment:
+      PORT: 3000
+    build:
+      context: .
+      dockerfile: ./build/api.Dockerfile
+    container_name: sgt_api
+    volumes:
+      - ./api:/app
+    ports:
+      - "3000:3000"
+    networks:
+      - sgt-network
+    
+  sgt_db:
+    image: mysql:8.0
+    container_name: sgt_db
+    environment:
+      - MYSQL_DATABASE=sgt_db
+      - MYSQL_ROOT_PASSWORD=sgtPass!123
+    ports:
+      - '3306:3306'
+    networks:
+      - sgt-network
+
+  sgt_adminer:
+    container_name: sgt_adminer
+    image: adminer:latest
+    environment:
+      ADMINER_DEFAULT_SERVER: sgt_db
+    ports:
+      - 8081:8080
+    depends_on:
+      -  sgt_db
+    networks:
+      - sgt-network
