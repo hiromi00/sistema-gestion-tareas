@@ -8,6 +8,13 @@ services:
   sgt_api:
     environment:
       PORT: 3000
+      DB_HOST: sgt_db
+      DB_PORT: 3306
+      DB_DATABASE: sgt_db
+      DB_USER: root
+      DB_PASSWORD: sgtPass!123
+      DB_POOL_MIN: 2
+      DB_POOL_MAX: 10
     build:
       context: .
       dockerfile: ./build/api.Dockerfile
