@@ -3,4 +3,9 @@ const roles = {
   otro: 'OTRO',
 };
 
-export default { roles };
+const privacyStatus = {
+  public: 'publica',
+  private: 'privada',
+};
+
+export default { roles, privacyStatus };

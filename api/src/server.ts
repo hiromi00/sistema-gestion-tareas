@@ -4,6 +4,8 @@ import cors from 'cors';
 import logger from 'morgan';
 import dotenv from 'dotenv';
 import path from 'path';
+import { errorHandler } from './middleware/error-middleware';
+import { TareaRouter } from './domain/Tarea';
 
 const envVars = dotenv.config({
   path: path.join(process.cwd(), `.env`),
@@ -30,5 +32,9 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
   console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
 });
+
+app.use('/tareas', TareaRouter);
+
+app.use(errorHandler);
 
 export default app;

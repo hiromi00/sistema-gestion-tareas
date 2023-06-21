@@ -6,3 +6,5 @@ export type Usuario = {
   password?: string;
   rol: Rol;
 };
+
+export type UsuarioResponse = Omit<Usuario, 'password'>;

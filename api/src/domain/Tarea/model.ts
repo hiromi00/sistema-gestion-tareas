@@ -10,5 +10,10 @@ export type Tarea = {
   comentarios: string;
   creado_por: Usuario;
   responsable: Usuario;
-  compartida_con: Usuario[];
+  compartida_con?: Usuario[];
+};
+
+export type TareaRequest = Omit<Tarea, 'id' | 'creado_por' | 'responsable' | 'compartida_con'> & {
+  responsable: number;
+  compartida_con?: number[];
 };
