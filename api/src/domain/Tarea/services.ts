@@ -25,7 +25,6 @@ export class TareaServices implements TareaRepository {
     }
 
     const newTarea = await TareaDbServices.create(tarea, responsable);
-    console.log('newTarea ---> ', newTarea);
 
     if (sharedUsers.length) {
       await TareaDbServices.linkTaskWithUsers(
