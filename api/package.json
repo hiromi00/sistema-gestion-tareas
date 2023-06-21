@@ -8,12 +8,14 @@
     "build": "tsc",
     "nodemon": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/server.ts",
     "migrate": "./node_modules/.bin/ts-node -r dotenv/config  ./node_modules/.bin/knex migrate:latest --knexfile src/database/knexfile.ts",
-    "rollback": "./node_modules/.bin/ts-node -r dotenv/config  ./node_modules/.bin/knex migrate:rollback --knexfile src/database/knexfile.ts"
+    "rollback": "./node_modules/.bin/ts-node -r dotenv/config  ./node_modules/.bin/knex migrate:rollback --knexfile src/database/knexfile.ts",
+    "seed": "./node_modules/.bin/ts-node -r dotenv/config  ./node_modules/.bin/knex seed:run --knexfile src/database/knexfile.ts"
   },
   "keywords": [],
   "author": "C. Alejandro Ortiz F.",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^5.1.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "debug": "^4.3.4",
@@ -27,6 +29,7 @@
     "ts-command-line-args": "^2.5.0"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.0",
     "@types/cookie-parser": "^1.4.3",
     "@types/cors": "^2.8.13",
     "@types/debug": "^4.1.8",
