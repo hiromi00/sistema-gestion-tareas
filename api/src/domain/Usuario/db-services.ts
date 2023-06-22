@@ -1,5 +1,5 @@
 import { db } from '../../database';
-import { UsuarioResponse } from './model';
+import { Usuario, UsuarioResponse } from './model';
 
 export class UsuarioDbServices {
   static async getById(id: number): Promise<UsuarioResponse> {
@@ -12,5 +12,11 @@ export class UsuarioDbServices {
     const users = await db('usuarios').select('id', 'email', 'rol_id').whereIn('id', ids);
 
     return users;
+  }
+
+  static async findByEmail(email: string): Promise<Usuario> {
+    const user = await db('usuarios').select('id', 'email', 'password').where({ email }).first();
+
+    return user;
   }
 }

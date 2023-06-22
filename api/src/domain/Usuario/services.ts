@@ -1,8 +1,9 @@
-import { HttpStatusCodes } from '../../constants';
+import { EnvVars, HttpStatusCodes } from '../../constants';
 import { BaseError } from '../../utils';
 import { UsuarioDbServices } from './db-services';
-import { Usuario, UsuarioResponse } from './model';
+import { Usuario, UsuarioAuthResponse, UsuarioResponse } from './model';
 import { UsuarioRepository } from './repository';
+import { comparePassword, generateToken } from './utils';
 
 export class UsuarioServices implements UsuarioRepository {
   async getById(id: number): Promise<UsuarioResponse> {
@@ -33,5 +34,57 @@ export class UsuarioServices implements UsuarioRepository {
     const userExist = listId.find((user) => user === userId);
 
     return userExist;
+  }
+
+  async login(email: string, password: string, done: Function): Promise<void> {
+    try {
+      const user = await UsuarioDbServices.findByEmail(email);
+
+      if (!user) {
+        throw new BaseError(HttpStatusCodes.BAD_REQUEST, 'BAD REQUEST', 'Usuario no encontrado.');
+      }
+
+      const passwordMatch = await comparePassword(password, user.password!!);
+
+      if (!passwordMatch) {
+        throw new BaseError(
+          HttpStatusCodes.BAD_REQUEST,
+          'BAD REQUEST',
+          'Usuario o contraseña incorrectos.'
+        );
+      }
+
+      const { password: userPassword, ...userWithoutPassword } = user;
+
+      return done(null, userWithoutPassword, {
+        message: 'Logged In Successfully',
+      });
+    } catch (error) {
+      console.log('error login ---> ', error);
+
+      done(error);
+    }
+  }
+
+  async findByEmail(email: string): Promise<Usuario> {
+    const userFound = await UsuarioDbServices.findByEmail(email);
+
+    if (!userFound) {
+      throw new BaseError(HttpStatusCodes.BAD_REQUEST, 'BAD REQUEST', 'Usuario no encontrado.');
+    }
+
+    return userFound;
+  }
+
+  handleLoginResponse(user: Usuario): UsuarioAuthResponse {
+    const token = generateToken({ email: user.email });
+
+    const result: UsuarioAuthResponse = {
+      accessToken: token,
+      expiresIn: EnvVars.Jwt.Exp,
+      userData: user,
+    };
+
+    return result;
   }
 }
