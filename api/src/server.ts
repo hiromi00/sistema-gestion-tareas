@@ -4,11 +4,11 @@ import cors from 'cors';
 import logger from 'morgan';
 import dotenv from 'dotenv';
 import path from 'path';
-import { errorHandler } from './middleware/error-middleware';
 import { TareaRouter } from './domain/Tarea';
 import { UsuarioRouter } from './domain/Usuario';
 
 import './strategies/passportStrategy';
+import { VerifyToken, errorHandler } from './middleware';
 
 const envVars = dotenv.config({
   path: path.join(process.cwd(), `.env`),
@@ -37,7 +37,7 @@ app.listen(port, () => {
 });
 
 app.use('/auth', UsuarioRouter);
-app.use('/tareas', TareaRouter);
+app.use('/tareas', VerifyToken, TareaRouter);
 
 app.use(errorHandler);
 

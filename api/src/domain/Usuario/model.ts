@@ -18,3 +18,8 @@ export type UsuarioAuthResponse = {
 export type TokenPayload = {
   email: string;
 };
+
+export type JwtPayload = TokenPayload & {
+  iat: number;
+  exp: number;
+};
