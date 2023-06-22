@@ -7,4 +7,8 @@ export class TagDbServices {
 
     return newTags;
   }
+
+  static async removeTags(tareaId: number): Promise<void> {
+    await db('tags').where({ tarea_id: tareaId }).del();
+  }
 }

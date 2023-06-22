@@ -2,11 +2,13 @@ import { Keys } from '../../constants';
 import { db } from '../../database';
 import {
   Tarea,
+  TareaActualizar,
   TareaListReq,
   TareaListRes,
   TareaPaginacion,
   TareaRequest,
   TareaResponse,
+  TareaResponseById,
   UsuarioTarea,
 } from './model';
 
@@ -24,17 +26,29 @@ export class TareaDbServices {
     return tareaCrated[0];
   }
 
+  static async update(tareaId: number, tarea: TareaActualizar): Promise<number> {
+    const { compartida_con, ...tareaData } = tarea;
+
+    await db('tareas').where({ id: tareaId }).update(tareaData);
+
+    return tareaId;
+  }
+
   static async linkTaskWithUsers(tareaId: number, userIds: number[]): Promise<void> {
     const links = userIds.map((userId) => ({ tarea_id: tareaId, usuario_id: userId }));
 
     await db('tareas_usuarios').insert(links);
   }
 
+  static async deleteLinks(tareaId: number, userIds: number[]): Promise<void> {
+    await db('tareas_usuarios').where('tarea_id', tareaId).whereIn('usuario_id', userIds).del();
+  }
+
   static async remove(taskId: number): Promise<void> {
     await db('tareas').where({ id: taskId }).del();
   }
 
-  static async getById(taskId: number): Promise<TareaResponse> {
+  static async getById(taskId: number): Promise<TareaResponseById> {
     const tarea = await db('tareas').where({ id: taskId }).first();
 
     return tarea;
@@ -79,15 +93,6 @@ export class TareaDbServices {
       if (filter.publica) {
         builder.where({ publica: filter.publica });
       }
-      if (filter.total_compartidos) {
-        //El valor de total_compartidos es el count de los usuarios compartidos con la tarea
-        builder.whereExists(function () {
-          this.select('*')
-            .from('tareas_usuarios')
-            .whereRaw('tareas_usuarios.tarea_id = tareas.id')
-            .count('*');
-        });
-      }
       if (filter.dias_vencimiento) {
         //Los dias de vencimiento son los dias que faltan para que se venza la tarea sobre el valor de tipo date fecha_entrega
         builder.whereRaw(`DATEDIFF(fecha_entrega, CURDATE()) = ${filter.dias_vencimiento}`);
@@ -118,5 +123,9 @@ export class TareaDbServices {
       total: total[0]['count(`id`)'],
       tareas,
     };
+  }
+
+  static async complete(taskId: number): Promise<void> {
+    await db('tareas').where({ id: taskId }).update({ estatus: true });
   }
 }

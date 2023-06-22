@@ -15,4 +15,8 @@ export class TagServices implements TagRepository {
     }
     return tagsIds;
   }
+
+  async removeTags(tareaId: number): Promise<void> {
+    await TagDbServices.removeTags(tareaId);
+  }
 }

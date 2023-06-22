@@ -5,4 +5,5 @@ export type TareaRepository = {
   getAll: Function;
   getById: Function;
   verifySharedUser: Function;
+  complete: Function;
 };

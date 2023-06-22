@@ -29,9 +29,33 @@ router.delete('/:id', async (req: RequestWithUser, res: Response, next: NextFunc
   }
 });
 
+router.post('/complete/:id', async (req: RequestWithUser, res: Response, next: NextFunction) => {
+  try {
+    const id = parseInt(req.params.id);
+    const response = await tareaService.complete(id, req.user!!.id!!);
+
+    res.json(answerOK(response));
+  } catch (error) {
+    console.log('error ---> ', error);
+    next(error);
+  }
+});
+
 router.get('/', async (req: RequestWithUserAndFilters, res: Response, next: NextFunction) => {
   try {
     const response = await tareaService.getAll(req.query, req.user!!.id!!);
+
+    res.json(answerOK(response));
+  } catch (error) {
+    console.log('error ---> ', error);
+    next(error);
+  }
+});
+
+router.patch('/:id', async (req: RequestWithUser, res: Response, next: NextFunction) => {
+  try {
+    const id = parseInt(req.params.id);
+    const response = await tareaService.update(id, req.body, req.user!!.id!!);
 
     res.json(answerOK(response));
   } catch (error) {

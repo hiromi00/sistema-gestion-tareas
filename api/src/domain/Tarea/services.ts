@@ -4,7 +4,15 @@ import { RolServices } from '../Rol/service';
 import { TagServices } from '../Tag';
 import { UsuarioResponse, UsuarioServices } from '../Usuario';
 import { TareaDbServices } from './db-services';
-import { Tarea, TareaListReq, TareaListRes, TareaRequest, TareaResponse } from './model';
+import {
+  Tarea,
+  TareaActualizar,
+  TareaListReq,
+  TareaListRes,
+  TareaRequest,
+  TareaResponse,
+  TareaResponseById,
+} from './model';
 import { TareaRepository } from './repository';
 import { destructureTarea } from './utils';
 
@@ -52,14 +60,47 @@ export class TareaServices implements TareaRepository {
     };
   }
 
-  async remove(taskId: number, userId: number) {
-    await this.verifySharedUser(userId, taskId);
+  async remove(tareaId: number, userId: number): Promise<void> {
+    const task = await TareaDbServices.getById(tareaId);
 
-    await TareaDbServices.remove(taskId);
+    if (task.publica !== Keys.privacyStatus.public) {
+      await this.verifySharedUser(userId, tareaId);
+    }
+
+    await TareaDbServices.remove(tareaId);
   }
 
-  async update() {
-    throw new BaseError(HttpStatusCodes.NOT_IMPLEMENTED, 'NOT_IMPLEMENTED', 'Not implemented yet.');
+  async update(tareaId: number, tarea: TareaActualizar, userId: number): Promise<any> {
+    const task = await TareaDbServices.getById(tareaId);
+
+    if (task.publica !== Keys.privacyStatus.public) {
+      await this.verifySharedUser(userId, tareaId);
+    }
+
+    const { tags, ...tareaData } = tarea;
+
+    const tareaUpdated = await TareaDbServices.update(tareaId, tareaData);
+
+    if (tarea.compartida_con) {
+      await Promise.all([
+        TareaDbServices.deleteLinks(tareaId, tarea.compartida_con),
+        TareaDbServices.linkTaskWithUsers(tareaUpdated, tarea.compartida_con),
+      ]);
+    }
+
+    if (tags) {
+      await Promise.all([
+        tagsServices.removeTags(tareaUpdated),
+        tagsServices.create(tags, tareaUpdated),
+      ]);
+    }
+
+    return {
+      tarea_id: tareaUpdated,
+      responsable: tareaData.responsable,
+      creado_por: userId,
+      compartida_con: tareaData.compartida_con,
+    };
   }
 
   async getAll(filter: TareaListReq, userId: number): Promise<TareaListRes> {
@@ -73,18 +114,26 @@ export class TareaServices implements TareaRepository {
     return await TareaDbServices.getAllPublic(filter);
   }
 
-  async getById(id: number, userId: number): Promise<TareaResponse> {
-    throw new BaseError(HttpStatusCodes.NOT_IMPLEMENTED, 'NOT_IMPLEMENTED', 'Not implemented yet.');
+  async getById(id: number, userId: number): Promise<Tarea | TareaResponseById> {
+    const tarea = await TareaDbServices.getById(id);
+
+    if (!tarea) {
+      throw new BaseError(HttpStatusCodes.NOT_FOUND, 'NOT_FOUND', 'Tarea no encontrada.');
+    }
+
+    await this.verifySharedUser(userId, id);
+
+    return tarea;
   }
 
-  async verifySharedUser(userId: number, taskId: number): Promise<void> {
-    const task = await TareaDbServices.getById(taskId);
+  async verifySharedUser(userId: number, tareaId: number): Promise<void> {
+    const task = await TareaDbServices.getById(tareaId);
 
     if (!task) {
       throw new BaseError(HttpStatusCodes.NOT_FOUND, 'NOT_FOUND', 'Tarea no encontrada.');
     }
 
-    const sharedUser = await TareaDbServices.findSharedUser(userId, taskId);
+    const sharedUser = await TareaDbServices.findSharedUser(userId, tareaId);
     //validar si el usuario es el creador de la tarea o si es el respponsable o si se le compartio la tarea
 
     if (task.creado_por !== userId && task.responsable !== userId && !sharedUser) {
@@ -94,5 +143,15 @@ export class TareaServices implements TareaRepository {
         'No tienes permiso para acceder a esta tarea.'
       );
     }
+  }
+
+  async complete(tareaId: number, userId: number): Promise<void> {
+    const task = await TareaDbServices.getById(tareaId);
+
+    if (task.publica !== Keys.privacyStatus.public) {
+      await this.verifySharedUser(userId, tareaId);
+    }
+
+    await TareaDbServices.complete(tareaId);
   }
 }

@@ -46,7 +46,6 @@ export type TareaListReq = TareaPaginacion & {
   clave: string;
   estatus: boolean | number;
   publica: string;
-  total_compartidos: number;
   dias_vencimiento: number;
   tipo_archivo: string;
 };
@@ -54,4 +53,17 @@ export type TareaListReq = TareaPaginacion & {
 export type TareaListRes = {
   total: number | string;
   tareas: Tarea[];
+};
+
+export type TareaResponseById = TareaResponse & {
+  id: number;
+  publica: string;
+};
+
+export type TareaActualizar = Omit<
+  Tarea,
+  'id' | 'creado_por' | 'responsable' | 'compartida_con' | 'estatus'
+> & {
+  responsable: number;
+  compartida_con?: number[];
 };
