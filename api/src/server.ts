@@ -6,6 +6,9 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { errorHandler } from './middleware/error-middleware';
 import { TareaRouter } from './domain/Tarea';
+import { UsuarioRouter } from './domain/Usuario';
+
+import './strategies/passportStrategy';
 
 const envVars = dotenv.config({
   path: path.join(process.cwd(), `.env`),
@@ -33,6 +36,7 @@ app.listen(port, () => {
   console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
 });
 
+app.use('/auth', UsuarioRouter);
 app.use('/tareas', TareaRouter);
 
 app.use(errorHandler);
