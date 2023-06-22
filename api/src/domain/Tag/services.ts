@@ -6,7 +6,6 @@ import { setTaskIdToTags } from './utils';
 export class TagServices implements TagRepository {
   async create(tags: Tag[], tareaId: number): Promise<number[]> {
     const tagsToDb = setTaskIdToTags(tareaId, tags);
-    console.log('tagsToDb ---> ', tagsToDb);
 
     const newTags = await TagDbServices.create(tagsToDb);
 

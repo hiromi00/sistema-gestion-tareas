@@ -17,8 +17,6 @@ export class TareaServices implements TareaRepository {
     let sharedUsers: UsuarioResponse[] = [];
     let responsable: number | undefined;
     if (tareaDestructure.compartida_con) {
-      console.log('tareaDestructure.compartida_con ---> ', tareaDestructure.compartida_con);
-
       sharedUsers = await userServices.findSharedList(tareaDestructure.compartida_con);
 
       responsable = await userServices.findUserInSharedList(

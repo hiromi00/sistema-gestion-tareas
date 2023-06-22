@@ -8,7 +8,6 @@ export class TareaDbServices {
     createdBy: number
   ): Promise<number> {
     const { compartida_con, ...tareaData } = tarea;
-    console.log('tareaData ---> ', tareaData);
 
     const tareaCrated = await db('tareas')
       .insert({ ...tareaData, estatus: false, responsable, creado_por: createdBy })
