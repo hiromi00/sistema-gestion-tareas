@@ -17,4 +17,16 @@ router.post('/', async (req: RequestWithUser, res: Response, next: NextFunction)
   }
 });
 
+router.delete('/:id', async (req: RequestWithUser, res: Response, next: NextFunction) => {
+  try {
+    const id = parseInt(req.params.id);
+    const response = await tareaService.remove(id, req.user!!.id!!);
+
+    res.json(answerOK(response));
+  } catch (error) {
+    console.log('error ---> ', error);
+    next(error);
+  }
+});
+
 export default router;
