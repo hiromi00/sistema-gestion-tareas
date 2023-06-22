@@ -1,5 +1,5 @@
 import { db } from '../../database';
-import { Usuario, UsuarioResponse } from './model';
+import { Usuario, UsuarioResponse, UsuarioRol } from './model';
 
 export class UsuarioDbServices {
   static async getById(id: number): Promise<UsuarioResponse> {
@@ -18,5 +18,15 @@ export class UsuarioDbServices {
     const user = await db('usuarios').select('id', 'email', 'password').where({ email }).first();
 
     return user;
+  }
+
+  static async getRol(userId: number): Promise<UsuarioRol> {
+    const rol = await db('usuarios')
+      .select('rol.id as rol_id', 'rol.nombre as rol_nombre')
+      .join('roles as rol', 'usuarios.rol_id', 'rol.id')
+      .where('usuarios.id', userId)
+      .first();
+
+    return rol;
   }
 }

@@ -23,3 +23,8 @@ export type JwtPayload = TokenPayload & {
   iat: number;
   exp: number;
 };
+
+export type UsuarioRol = {
+  rol_id: number;
+  rol_nombre: string;
+};

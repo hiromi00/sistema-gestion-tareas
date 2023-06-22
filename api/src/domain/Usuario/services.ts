@@ -1,7 +1,7 @@
 import { EnvVars, HttpStatusCodes } from '../../constants';
 import { BaseError } from '../../utils';
 import { UsuarioDbServices } from './db-services';
-import { Usuario, UsuarioAuthResponse, UsuarioResponse } from './model';
+import { Usuario, UsuarioAuthResponse, UsuarioResponse, UsuarioRol } from './model';
 import { UsuarioRepository } from './repository';
 import { comparePassword, generateToken } from './utils';
 
@@ -86,5 +86,15 @@ export class UsuarioServices implements UsuarioRepository {
     };
 
     return result;
+  }
+
+  async getRol(userId: number): Promise<UsuarioRol> {
+    const rol = await UsuarioDbServices.getRol(userId);
+
+    if (!rol) {
+      throw new BaseError(HttpStatusCodes.NOT_FOUND, 'NOT FOUND', 'Rol no encontrado.');
+    }
+
+    return rol;
   }
 }
