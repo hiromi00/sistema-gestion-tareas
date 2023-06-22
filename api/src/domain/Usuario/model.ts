@@ -8,3 +8,13 @@ export type Usuario = {
 };
 
 export type UsuarioResponse = Omit<Usuario, 'password'>;
+
+export type UsuarioAuthResponse = {
+  userData: Usuario;
+  accessToken: string;
+  expiresIn: string;
+};
+
+export type TokenPayload = {
+  email: string;
+};
