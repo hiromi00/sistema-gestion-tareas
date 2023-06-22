@@ -9,6 +9,7 @@ import { UsuarioRouter } from './domain/Usuario';
 
 import './strategies/passportStrategy';
 import { VerifyToken, errorHandler } from './middleware';
+import { ArchivoRouter } from './domain/Archivo';
 
 const envVars = dotenv.config({
   path: path.join(process.cwd(), `.env`),
@@ -38,6 +39,7 @@ app.listen(port, () => {
 
 app.use('/auth', UsuarioRouter);
 app.use('/tareas', VerifyToken, TareaRouter);
+app.use('/archivos', VerifyToken, ArchivoRouter);
 
 app.use(errorHandler);
 

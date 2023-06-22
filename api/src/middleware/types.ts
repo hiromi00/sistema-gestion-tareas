@@ -9,6 +9,10 @@ export interface RequestWithUserAndFilters extends Request<{}, any, any, TareaLi
   user?: User;
 }
 
+export interface RequestWithUserAndFile extends RequestWithUser {
+  file?: any;
+}
+
 export type User = {
   email?: string;
   id?: number;

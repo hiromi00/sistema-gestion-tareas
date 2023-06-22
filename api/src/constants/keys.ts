@@ -8,4 +8,6 @@ const privacyStatus = {
   private: 'privada',
 };
 
-export default { roles, privacyStatus };
+const acceptedExt = ['.PDF', '.JPG', '.PNG'];
+
+export default { roles, privacyStatus, acceptedExt };
