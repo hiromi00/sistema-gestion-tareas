@@ -52,6 +52,18 @@ router.get('/', async (req: RequestWithUserAndFilters, res: Response, next: Next
   }
 });
 
+router.get('/:id', async (req: RequestWithUser, res: Response, next: NextFunction) => {
+  try {
+    const id = parseInt(req.params.id);
+    const response = await tareaService.getByIdIncludeAll(id, req.user!!.id!!);
+
+    res.json(answerOK(response));
+  } catch (error) {
+    console.log('error ---> ', error);
+    next(error);
+  }
+});
+
 router.patch('/:id', async (req: RequestWithUser, res: Response, next: NextFunction) => {
   try {
     const id = parseInt(req.params.id);

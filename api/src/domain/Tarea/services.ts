@@ -126,6 +126,24 @@ export class TareaServices implements TareaRepository {
     return tarea;
   }
 
+  async getByIdIncludeAll(tareaId: number, userId: number): Promise<any> {
+    const tarea = await TareaDbServices.getByIdIncludeAll(tareaId);
+
+    if (!tarea) {
+      throw new BaseError(
+        HttpStatusCodes.NOT_FOUND,
+        'NOT_FOUND',
+        'No se encontró la tarea solicitada.'
+      );
+    }
+
+    if (tarea.publica !== Keys.privacyStatus.public) {
+      await this.verifySharedUser(userId, tareaId);
+    }
+
+    return tarea;
+  }
+
   async verifySharedUser(userId: number, tareaId: number): Promise<void> {
     const task = await TareaDbServices.getById(tareaId);
 
