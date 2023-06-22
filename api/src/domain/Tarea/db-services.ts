@@ -2,11 +2,16 @@ import { db } from '../../database';
 import { Tarea, TareaRequest } from './model';
 
 export class TareaDbServices {
-  static async create(tarea: TareaRequest, responsable: number): Promise<number> {
+  static async create(
+    tarea: TareaRequest,
+    responsable: number,
+    createdBy: number
+  ): Promise<number> {
     const { compartida_con, ...tareaData } = tarea;
+    console.log('tareaData ---> ', tareaData);
 
     const tareaCrated = await db('tareas')
-      .insert({ ...tareaData, estatus: false, responsable })
+      .insert({ ...tareaData, estatus: false, responsable, creado_por: createdBy })
       .returning('*');
     return tareaCrated[0];
   }

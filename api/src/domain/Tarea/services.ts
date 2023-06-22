@@ -1,21 +1,29 @@
 import { HttpStatusCodes } from '../../constants';
 import { BaseError } from '../../utils';
-import { UsuarioServices } from '../Usuario';
+import { TagServices } from '../Tag';
+import { UsuarioResponse, UsuarioServices } from '../Usuario';
 import { TareaDbServices } from './db-services';
-import { Tarea, TareaRequest } from './model';
+import { Tarea, TareaRequest, TareaResponse } from './model';
 import { TareaRepository } from './repository';
+import { destructureTarea } from './utils';
 
 const userServices = new UsuarioServices();
+const tagsServices = new TagServices();
 
 export class TareaServices implements TareaRepository {
-  async create(tarea: TareaRequest, userId: number): Promise<number> {
-    let sharedUsers: any[] = [];
-    let responsable = null;
-    if (tarea.compartida_con) {
-      sharedUsers = await userServices.findSharedList(tarea.compartida_con);
+  async create(tarea: Tarea, userId: number): Promise<TareaResponse> {
+    const tareaDestructure = destructureTarea(tarea, userId);
+
+    let sharedUsers: UsuarioResponse[] = [];
+    let responsable: number | undefined;
+    if (tareaDestructure.compartida_con) {
+      console.log('tareaDestructure.compartida_con ---> ', tareaDestructure.compartida_con);
+
+      sharedUsers = await userServices.findSharedList(tareaDestructure.compartida_con);
+
       responsable = await userServices.findUserInSharedList(
-        tarea.responsable,
-        tarea.compartida_con
+        tareaDestructure.responsable,
+        tareaDestructure.compartida_con
       );
     }
 
@@ -24,7 +32,7 @@ export class TareaServices implements TareaRepository {
       responsable = userId;
     }
 
-    const newTarea = await TareaDbServices.create(tarea, responsable);
+    const newTarea = await TareaDbServices.create(tareaDestructure, responsable, userId);
 
     if (sharedUsers.length) {
       await TareaDbServices.linkTaskWithUsers(
@@ -32,6 +40,16 @@ export class TareaServices implements TareaRepository {
         sharedUsers.map((user) => user.id)
       );
     }
-    return newTarea;
+    let tags: number[] = [];
+    if (tarea.tags) {
+      tags = await tagsServices.create(tarea.tags, newTarea);
+    }
+    return {
+      tarea_id: newTarea,
+      responsable: responsable,
+      creado_por: userId,
+      compartida_con: tareaDestructure.compartida_con,
+      tags: tags,
+    };
   }
 }
