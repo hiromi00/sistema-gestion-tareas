@@ -1,13 +1,14 @@
-import { HttpStatusCodes } from '../../constants';
+import { HttpStatusCodes, Keys } from '../../constants';
 import { BaseError } from '../../utils';
+import { RolServices } from '../Rol/service';
 import { TagServices } from '../Tag';
 import { UsuarioResponse, UsuarioServices } from '../Usuario';
 import { TareaDbServices } from './db-services';
-import { Tarea, TareaRequest, TareaResponse } from './model';
+import { Tarea, TareaListReq, TareaListRes, TareaRequest, TareaResponse } from './model';
 import { TareaRepository } from './repository';
 import { destructureTarea } from './utils';
 
-const userServices = new UsuarioServices();
+const usuarioServices = new UsuarioServices();
 const tagsServices = new TagServices();
 
 export class TareaServices implements TareaRepository {
@@ -17,9 +18,9 @@ export class TareaServices implements TareaRepository {
     let sharedUsers: UsuarioResponse[] = [];
     let responsable: number | undefined;
     if (tareaDestructure.compartida_con) {
-      sharedUsers = await userServices.findSharedList(tareaDestructure.compartida_con);
+      sharedUsers = await usuarioServices.findSharedList(tareaDestructure.compartida_con);
 
-      responsable = await userServices.findUserInSharedList(
+      responsable = await usuarioServices.findUserInSharedList(
         tareaDestructure.responsable,
         tareaDestructure.compartida_con
       );
@@ -61,8 +62,15 @@ export class TareaServices implements TareaRepository {
     throw new BaseError(HttpStatusCodes.NOT_IMPLEMENTED, 'NOT_IMPLEMENTED', 'Not implemented yet.');
   }
 
-  async getAll(userId: number): Promise<TareaResponse[]> {
-    throw new BaseError(HttpStatusCodes.NOT_IMPLEMENTED, 'NOT_IMPLEMENTED', 'Not implemented yet.');
+  async getAll(filter: TareaListReq, userId: number): Promise<TareaListRes> {
+    const rol = await usuarioServices.getRol(userId);
+
+    if (rol.rol_nombre === Keys.roles.admin) {
+      const tareas = await TareaDbServices.getAll(filter);
+
+      return tareas;
+    }
+    return await TareaDbServices.getAllPublic(filter);
   }
 
   async getById(id: number, userId: number): Promise<TareaResponse> {

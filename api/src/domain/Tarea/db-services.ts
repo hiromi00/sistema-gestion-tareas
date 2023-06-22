@@ -1,5 +1,14 @@
+import { Keys } from '../../constants';
 import { db } from '../../database';
-import { Tarea, TareaRequest, TareaResponse, UsuarioTarea } from './model';
+import {
+  Tarea,
+  TareaListReq,
+  TareaListRes,
+  TareaPaginacion,
+  TareaRequest,
+  TareaResponse,
+  UsuarioTarea,
+} from './model';
 
 export class TareaDbServices {
   static async create(
@@ -37,5 +46,77 @@ export class TareaDbServices {
       .first();
 
     return user;
+  }
+
+  static async getAllPublic(filter: TareaPaginacion): Promise<TareaListRes> {
+    const query = db('tareas').where({ publica: Keys.privacyStatus.public });
+
+    query.limit(filter.per_page ?? 10);
+
+    if (filter.page) {
+      query.offset((filter.page - 1) * (filter.per_page ?? 10));
+    }
+    const tareas = await query;
+
+    //realizar un count de las tareas
+    const total = await db('tareas').count('id').where({ publica: Keys.privacyStatus.public });
+
+    return {
+      total: total[0].count,
+      tareas,
+    };
+  }
+
+  static async getAll(filter: TareaListReq): Promise<TareaListRes> {
+    const query = db('tareas').where((builder) => {
+      if (filter.clave) {
+        builder.where('titulo', 'like', `%${filter.clave}%`);
+        builder.orWhere('descripcion', 'like', `%${filter.clave}%`);
+      }
+      if (filter.estatus) {
+        builder.where({ estatus: filter.estatus });
+      }
+      if (filter.publica) {
+        builder.where({ publica: filter.publica });
+      }
+      if (filter.total_compartidos) {
+        //El valor de total_compartidos es el count de los usuarios compartidos con la tarea
+        builder.whereExists(function () {
+          this.select('*')
+            .from('tareas_usuarios')
+            .whereRaw('tareas_usuarios.tarea_id = tareas.id')
+            .count('*');
+        });
+      }
+      if (filter.dias_vencimiento) {
+        //Los dias de vencimiento son los dias que faltan para que se venza la tarea sobre el valor de tipo date fecha_entrega
+        builder.whereRaw(`DATEDIFF(fecha_entrega, CURDATE()) = ${filter.dias_vencimiento}`);
+      }
+
+      if (filter.tipo_archivo) {
+        //Este filtro es para buscar por el tipo de archivo que se va a subir sobre la tabla "archivos"
+        builder.whereExists(function () {
+          this.select('*')
+            .from('archivos')
+            .whereRaw('archivos.tarea_id = tareas.id')
+            .where({ tipo_archivo: filter.tipo_archivo });
+        });
+      }
+    });
+
+    query.limit(filter.per_page ?? 10);
+
+    if (filter.page) {
+      query.offset((filter.page - 1) * (filter.per_page ?? 10));
+    }
+    const tareas = await query;
+
+    //realizar un count de las tareas
+    const total = await db('tareas').count('id');
+
+    return {
+      total: total[0]['count(`id`)'],
+      tareas,
+    };
   }
 }

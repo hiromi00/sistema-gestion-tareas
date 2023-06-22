@@ -36,3 +36,22 @@ export type UsuarioTarea = {
   usuario_id: number;
   tarea_id: number;
 };
+
+export type TareaPaginacion = {
+  page: number;
+  per_page: number;
+};
+
+export type TareaListReq = TareaPaginacion & {
+  clave: string;
+  estatus: boolean | number;
+  publica: string;
+  total_compartidos: number;
+  dias_vencimiento: number;
+  tipo_archivo: string;
+};
+
+export type TareaListRes = {
+  total: number | string;
+  tareas: Tarea[];
+};
