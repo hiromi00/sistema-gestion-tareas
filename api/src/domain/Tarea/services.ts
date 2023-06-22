@@ -50,4 +50,41 @@ export class TareaServices implements TareaRepository {
       tags: tags,
     };
   }
+
+  async remove(taskId: number, userId: number) {
+    await this.verifySharedUser(userId, taskId);
+
+    await TareaDbServices.remove(taskId);
+  }
+
+  async update() {
+    throw new BaseError(HttpStatusCodes.NOT_IMPLEMENTED, 'NOT_IMPLEMENTED', 'Not implemented yet.');
+  }
+
+  async getAll(userId: number): Promise<TareaResponse[]> {
+    throw new BaseError(HttpStatusCodes.NOT_IMPLEMENTED, 'NOT_IMPLEMENTED', 'Not implemented yet.');
+  }
+
+  async getById(id: number, userId: number): Promise<TareaResponse> {
+    throw new BaseError(HttpStatusCodes.NOT_IMPLEMENTED, 'NOT_IMPLEMENTED', 'Not implemented yet.');
+  }
+
+  async verifySharedUser(userId: number, taskId: number): Promise<void> {
+    const task = await TareaDbServices.getById(taskId);
+
+    if (!task) {
+      throw new BaseError(HttpStatusCodes.NOT_FOUND, 'NOT_FOUND', 'Tarea no encontrada.');
+    }
+
+    const sharedUser = await TareaDbServices.findSharedUser(userId, taskId);
+    //validar si el usuario es el creador de la tarea o si es el respponsable o si se le compartio la tarea
+
+    if (task.creado_por !== userId && task.responsable !== userId && !sharedUser) {
+      throw new BaseError(
+        HttpStatusCodes.FORBIDDEN,
+        'FORBIDDEN',
+        'No tienes permiso para acceder a esta tarea.'
+      );
+    }
+  }
 }

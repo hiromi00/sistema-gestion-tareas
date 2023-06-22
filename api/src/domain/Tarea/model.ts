@@ -31,3 +31,8 @@ export type TareaResponse = {
   compartida_con?: number[];
   tags: number[];
 };
+
+export type UsuarioTarea = {
+  usuario_id: number;
+  tarea_id: number;
+};
