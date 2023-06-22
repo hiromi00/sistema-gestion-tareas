@@ -1,7 +1,7 @@
 import express, { NextFunction, Request, Response } from 'express';
 import { TareaServices } from './services';
 import { answerOK } from '../../utils';
-import { RequestWithUser } from '../../middleware/types';
+import { RequestWithUser, RequestWithUserAndFilters } from '../../middleware/types';
 
 const router = express.Router();
 
@@ -21,6 +21,17 @@ router.delete('/:id', async (req: RequestWithUser, res: Response, next: NextFunc
   try {
     const id = parseInt(req.params.id);
     const response = await tareaService.remove(id, req.user!!.id!!);
+
+    res.json(answerOK(response));
+  } catch (error) {
+    console.log('error ---> ', error);
+    next(error);
+  }
+});
+
+router.get('/', async (req: RequestWithUserAndFilters, res: Response, next: NextFunction) => {
+  try {
+    const response = await tareaService.getAll(req.query, req.user!!.id!!);
 
     res.json(answerOK(response));
   } catch (error) {
