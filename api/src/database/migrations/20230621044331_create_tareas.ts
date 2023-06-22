@@ -6,7 +6,7 @@ export async function up(knex: Knex): Promise<void> {
     table.string('titulo', 100).notNullable();
     table.text('descripcion').notNullable();
     table.boolean('estatus').notNullable();
-    table.timestamp('fecha_entrega').notNullable();
+    table.date('fecha_entrega').notNullable();
     table.string('publica', 100).notNullable();
     table.text('comentarios').notNullable();
     table.integer('creado_por').unsigned();

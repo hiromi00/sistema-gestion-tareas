@@ -3,7 +3,7 @@ import { Knex } from 'knex';
 export async function up(knex: Knex): Promise<void> {
   return knex.schema.createTable('usuarios', (table) => {
     table.increments('id').primary();
-    table.string('email', 100).notNullable();
+    table.string('email', 100).notNullable().unique();
     table.string('password').notNullable();
     table.integer('rol_id').unsigned();
     table.foreign('rol_id').references('id').inTable('roles').onDelete('CASCADE');
